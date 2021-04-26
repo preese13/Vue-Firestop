@@ -1,21 +1,24 @@
 <template>
   <div class="product">
     <div class="product-page-container" v-if="product">
-      <h3 class="padding-class">
+      <div class="carousel-container">
+        <b-carousel
+          id="carousel-1"
+          v-model="slide"
+          :interval="4000"
+          controls
+          indicators
+          background="#ababab"
+          style="text-shadow: 1px 1px 2px #333;"
+          @sliding-start="onSlideStart"
+          @sliding-end="onSlideEnd">
+            <b-carousel-slide v-for="image in productImages" :key="image.id" v-bind:img-src="image.url" ></b-carousel-slide>
+        </b-carousel>
+      </div>
+      <div  class="info-container">
+              <h3 class="padding-class">
         {{product.name}}
       </h3>
-    <b-carousel
-        id="carousel-1"
-        v-model="slide"
-        :interval="4000"
-        controls
-        indicators
-        background="#ababab"
-        style="text-shadow: 1px 1px 2px #333;"
-        @sliding-start="onSlideStart"
-        @sliding-end="onSlideEnd">
-          <b-carousel-slide v-for="image in productImages" :key="image.id" v-bind:img-src="image.url" ></b-carousel-slide>
-    </b-carousel>
     <h5 class="padding-top">
       Details
     </h5>
@@ -28,6 +31,7 @@
     <b-list-group>
       <b-list-group-item class="padding-class" v-for="bullet in bulletPoints" :key="bullet.id"> {{ bullet.bulletPoint }} </b-list-group-item>
     </b-list-group>
+      </div>
     </div>
     <div v-else>
       <b-spinner label="Loading..."></b-spinner>
