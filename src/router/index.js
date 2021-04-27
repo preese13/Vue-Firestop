@@ -1,35 +1,34 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Products from '../views/Products.vue'
-import Product from '../views/Product.vue'
-import NotFound from '../views/NotFound.vue'
+import Vue from "vue";
+import VueRouter from "vue-router";
+import Products from "../views/Products.vue";
+import Product from "../views/Product.vue";
+import NotFound from "../views/NotFound.vue";
 
-
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/',
-    name: 'Products',
-    component: Products
+    path: "/",
+    name: "Products",
+    component: Products,
   },
   {
-    path: '/products/:id',
-    name: 'Product',
+    path: "/products/:id",
+    name: "Product",
     component: Product,
-    props: true
+    props: true,
   },
   {
-    name: 'NotFound',
-    path: '/:catchAll(.*)',
-    component: NotFound
-  }
-]
+    name: "NotFound",
+    path: "/:catchAll(.*)",
+    component: NotFound,
+  },
+];
 
 const router = new VueRouter({
-  mode: 'history',
+  mode: "history",
   base: process.env.BASE_URL,
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;
