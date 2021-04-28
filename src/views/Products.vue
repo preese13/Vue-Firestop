@@ -1,6 +1,8 @@
 <template>
   <div class="products">
     <div>
+      <!--Yeah, Navbar should be its own component.  added this at the last minute to navigate away from 404 page and just 
+    copy and pasted it for consistencies sake -->
       <b-navbar fixed="top" toggleable="lg" type="dark" variant="info">
         <b-navbar-brand><router-link to="/">Home</router-link></b-navbar-brand>
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -93,94 +95,21 @@ export default {
   name: "Products",
   data() {
     return {
-      products: null,
-      productsBackup: null,
-      page: 1,
+      filterString: "",
+      infiniteScroll: true,
       itemsPerPage: 25,
       loadingMoreContent: false,
-      filterString: "",
-      SortOrder: null,
+      page: 1,
+      products: null,
+      productsBackup: null,
       searchString: "",
-      infiniteScroll: true,
+      SortOrder: null,
     };
   },
   mounted() {
     this.fetchProducts("mounted");
   },
   methods: {
-    checkForEmptyReturnObj() {
-      //when getting products where page = page+1, ensure the array isn't empty because we've surpassed the number of pages in db
-      if (this.products.length === 0) {
-        this.products = this.productsBackup;
-      } else {
-        this.productsBackup = this.products;
-      }
-    },
-    fetchProducts(origin) {
-      //all requests are minute variations on same request, so I've bundled them here
-      if (origin === "changePage") {
-        // click next/prev page
-        fetch(
-          "https://api.stifirestop.com/products?page=" +
-            this.page +
-            "&limit=" +
-            this.itemsPerPage +
-            "&load%5b%5d=images"
-        )
-          .then((res) => res.json())
-          .then(
-            (data) => (
-              (this.products = data.data),
-              (this.loadingMoreContent = false),
-              this.checkForEmptyReturnObj(),
-              this.sortBy()
-            )
-          )
-          .catch((err) => alert(err.message));
-      }
-
-      if (origin === "itemsPerPage" || origin === "mounted") {
-        //change items per page || onMount
-        fetch(
-          "https://api.stifirestop.com/products?page=" +
-            this.page +
-            "&limit=" +
-            this.itemsPerPage +
-            "&load%5b%5d=images"
-        )
-          .then((res) => res.json())
-          .then(
-            (data) => (
-              (this.products = data.data),
-              (this.loadingMoreContent = false),
-              (this.productsBackup = this.product),
-              this.sortBy()
-            )
-          )
-          .catch((err) => alert(err.message));
-      }
-
-      if (origin === "loadMore") {
-        // infinite scroll
-        fetch(
-          "https://api.stifirestop.com/products?page=" +
-            this.page +
-            "&limit=" +
-            this.itemsPerPage +
-            "&load%5b%5d=images"
-        )
-          .then((res) => res.json())
-          .then(
-            (data) => (
-              (this.products = this.products.concat(data.data)),
-              (this.productsBackup = this.products),
-              (this.loadingMoreContent = false),
-              this.sortBy()
-            )
-          )
-          .catch((err) => alert(err.message));
-      }
-    },
     changePage(e) {
       if (e.target.id === "next") {
         this.page = this.page + 1;
@@ -196,23 +125,106 @@ export default {
         this.productsBackup = this.products;
       }
     },
+    checkForEmptyReturnObj() {
+      //when getting products where page = page+1, ensure the array isn't empty because we've surpassed the number of pages in db
+      if (this.products.length === 0) {
+        this.products = this.productsBackup;
+      } else {
+        this.productsBackup = this.products;
+      }
+    },
+    fetchProducts(origin) {
+      if (origin === "changePage") {
+        fetch(
+          "https://api.stifirestop.com/products?page=" +
+            this.page +
+            "&limit=" +
+            this.itemsPerPage +
+            "&load%5b%5d=images"
+        )
+          .then((res) => res.json())
+          .then(
+            (data) => (
+              (this.products = data.data),
+              (this.loadingMoreContent = false),
+              this.checkForEmptyReturnObj(),
+              this.sortBy(),
+              (this.filterString = "")
+            )
+          )
+          .catch(() => this.redirect());
+      }
+
+      if (origin === "itemsPerPage" || origin === "mounted") {
+        fetch(
+          "https://api.stifirestop.com/products?page=" +
+            this.page +
+            "&limit=" +
+            this.itemsPerPage +
+            "&load%5b%5d=images"
+        )
+          .then((res) => res.json())
+          .then(
+            (data) => (
+              (this.products = data.data),
+              (this.loadingMoreContent = false),
+              (this.productsBackup = data.data),
+              this.sortBy(),
+              (this.filterString = "")
+            )
+          )
+          .catch(() => this.redirect());
+      }
+
+      if (origin === "loadMore") {
+        fetch(
+          "https://api.stifirestop.com/products?page=" +
+            this.page +
+            "&limit=" +
+            this.itemsPerPage +
+            "&load%5b%5d=images"
+        )
+          .then((res) => res.json())
+          .then(
+            (data) => (
+              (this.products = this.products.concat(data.data)),
+              (this.productsBackup = this.products),
+              (this.loadingMoreContent = false),
+              this.sortBy(),
+              (this.filterString = "")
+            )
+          )
+          .catch(() => this.redirect());
+      }
+    },
     //since the API is giving me trouble, I'm doing some javascript filtering
     filterByName(e) {
+      if (this.filterString === "") {
+        return;
+      }
       if (e.data === null) {
         //when user deletes character in fiter string, restore array to backup and filter again
         this.products = this.productsBackup;
+      } else {
+        this.products = this.products.filter(
+          (product) =>
+            product.name
+              .toLowerCase()
+              .indexOf(this.filterString.toLowerCase()) >= 0
+        );
       }
-      this.products = this.products.filter(
-        (product) =>
-          product.name.toLowerCase().indexOf(this.filterString.toLowerCase()) >=
-          0
-      );
     },
 
     loadMore() {
       this.page = this.page + 1;
       this.loadingMoreContent = true;
       this.fetchProducts("loadMore");
+    },
+
+    redirect() {
+      this.$router.push({
+        name: "NotFound",
+      });
     },
 
     selectItemsPerPage() {
@@ -241,6 +253,8 @@ export default {
     },
     toggleInfiniteScroll() {
       this.infiniteScroll = !this.infiniteScroll;
+      this.products = null;
+      this.fetchProducts("mounted");
     },
 
     /*  API is giving me issues, may or may not get back to this one 
@@ -263,53 +277,6 @@ export default {
 </script>
 
 <style>
-.products-container {
-  display: flex;
-  flex-direction: row;
-  flex-flow: row wrap;
-  justify-content: space-around;
-}
-
-.padding-class {
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.products-title {
-  margin: auto;
-  margin-bottom: 0px;
-  font-size: 18px;
-  text-align: center;
-  width: 100%;
-}
-
-.products-p {
-  color: black;
-  font-size: 12px;
-  text-decoration: none !important;
-  height: 100%;
-  width: 100%;
-}
-
-.products-p :hover {
-  text-decoration: none !important;
-}
-
-.products-item {
-  max-width: 250px;
-  margin: 50px;
-}
-
-.products {
-  max-width: 1200px;
-  margin: auto;
-}
-
-.product-img {
-  max-width: 300px;
-  margin: auto;
-}
-
 .full-page-spinner {
   display: flex;
   justify-content: center;
@@ -323,6 +290,7 @@ export default {
   justify-content: center;
   margin-top: 10px;
 }
+
 .options-container-container {
   display: flex;
   flex-direction: row;
@@ -332,6 +300,49 @@ export default {
 
 .options-title {
   margin: 10px;
+}
+
+.padding-class {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.product-img {
+  max-width: 300px;
+  margin: auto;
+}
+
+.products {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.products-container {
+  display: flex;
+  flex-direction: row;
+  flex-flow: row wrap;
+  justify-content: space-around;
+}
+
+.products-item {
+  max-width: 250px;
+  margin: 50px;
+}
+
+.products-p {
+  color: black;
+  font-size: 12px;
+  text-decoration: none !important;
+  height: 100%;
+  width: 100%;
+}
+
+.products-title {
+  margin: auto;
+  margin-bottom: 0px;
+  font-size: 18px;
+  text-align: center;
+  width: 100%;
 }
 
 @media only screen and (max-width: 714px) {

@@ -1,5 +1,7 @@
 <template>
   <div class="product">
+    <!--Yeah, Navbar should be its own component.  added this at the last minute to navigate away from 404 page and just 
+    copy and pasted it for consistencies sake -->
     <b-navbar fixed="top" toggleable="lg" type="dark" variant="info">
       <b-navbar-brand><router-link to="/">Home</router-link></b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -27,7 +29,13 @@
             :img-src="image.url"
           ></b-carousel-slide>
         </b-carousel>
-        <div class="order-info-container">test</div>
+        <div class="order-info-container">
+          <h5>a table with ordering info!!!!!!!</h5>
+          <b-table striped hover :items="orderInfoObject"></b-table>
+          <a href="#" class="action-button shadow animate green"
+            >BUY MY PRODUCT!</a
+          >
+        </div>
       </div>
       <div class="info-container">
         <h3 class="padding-class info-header">
@@ -63,6 +71,12 @@ export default {
       product: null,
       slide: 0,
       sliding: null,
+      orderInfoObject: [
+        { Size: "Small", Price: "$10.99", Shipping: "$5.99" },
+        { Size: "Medium", Price: "$11.99", Shipping: "$6.99" },
+        { Size: "Large", Price: "$12.99", Shipping: "No" },
+        { Size: "Double Large", Price: "$999.99", Shipping: "FREE" },
+      ],
     };
   },
   computed: {
@@ -97,11 +111,11 @@ export default {
       .catch(() => this.redirect());
   },
   methods: {
-    onSlideStart() {
-      this.sliding = true;
-    },
     onSlideEnd() {
       this.sliding = false;
+    },
+    onSlideStart() {
+      this.sliding = true;
     },
     redirect() {
       this.$router.push({
@@ -113,39 +127,17 @@ export default {
 </script>
 
 <style>
-.product {
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  justify-content: center;
-}
-
-.product-page-container {
-  max-width: 1000px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-}
-
-.orer-info-container {
-  width: 100%;
-  height: 100px;
-  background-color: red;
-}
-
-.padding-class {
-  padding: 10px;
-}
-
-.padding-top {
-  padding-top: 10px;
-}
-
 .carousel-container {
   width: 100%;
   max-width: 800px;
   padding: 10px;
   width: 65%;
+}
+
+.carousel-header {
+  display: none;
+  text-align: center;
+  font-size: 20px;
 }
 
 .info-container {
@@ -160,10 +152,34 @@ export default {
   border-bottom: 1px solid #eee;
 }
 
-.carousel-header {
-  display: none;
-  text-align: center;
-  font-size: 20px;
+.order-info-container {
+  width: 100%;
+  margin: 10px;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.padding-class {
+  padding: 10px;
+}
+
+.padding-top {
+  padding-top: 10px;
+}
+
+.product {
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.product-page-container {
+  max-width: 1000px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
 
 .product-description {
@@ -173,6 +189,39 @@ export default {
 
 .spec-item {
   font-size: 15px;
+}
+
+.animate {
+  transition: all 0.1s;
+  -webkit-transition: all 0.1s;
+}
+
+.action-button {
+  position: relative;
+  padding: 10px 40px;
+  margin: 0px 10px 10px 0px;
+  float: left;
+  border-radius: 10px;
+  font-family: "Poppins", sans-serif;
+  font-size: 25px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.action-button :hover {
+  color: white !important;
+}
+
+.green {
+  background-color: #82bf56;
+  border-bottom: 5px solid #669644;
+  text-shadow: 0px -2px #669644;
+}
+
+.action-button:active {
+  transform: translate(0px, 5px);
+  -webkit-transform: translate(0px, 5px);
+  border-bottom: 1px solid;
 }
 
 @media only screen and (max-width: 750px) {
