@@ -1,42 +1,57 @@
 <template>
   <div class="products">
     <div>
-  <b-navbar fixed="top" toggleable="lg" type="dark" variant="info">
-    <b-navbar-brand ><router-link to="/">Home</router-link></b-navbar-brand>
-    <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-    <b-collapse id="nav-collapse" is-nav>
-      <b-navbar-nav>
-        <b-nav-item @click="toggleInfiniteScroll">Infinite Scroll</b-nav-item>
-      </b-navbar-nav>
-      <!-- Right aligned nav items -->
-      <b-navbar-nav class="ml-auto">
-        <b-nav-form>
-          <input placeholder="Filter" type="search" v-model="filterString" @input="filterByName">
-        </b-nav-form>
-         <!-- API is givine me issues, might get to this one
+      <b-navbar fixed="top" toggleable="lg" type="dark" variant="info">
+        <b-navbar-brand><router-link to="/">Home</router-link></b-navbar-brand>
+        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+        <b-collapse id="nav-collapse" is-nav>
+          <b-navbar-nav>
+            <b-nav-item @click="toggleInfiniteScroll"
+              >Infinite Scroll</b-nav-item
+            >
+          </b-navbar-nav>
+          <!-- Right aligned nav items -->
+          <b-navbar-nav class="ml-auto">
+            <b-nav-form>
+              <input
+                v-model="filterString"
+                placeholder="Filter"
+                type="search"
+                @input="filterByName"
+              />
+            </b-nav-form>
+            <!-- API is givine me issues, might get to this one
            <b-nav-form  @submit.prevent="searchByName">
           <input placeholder="Search" type="search" v-model="searchString">
           <button type="submit">
             Submit
           </button>
         </b-nav-form>-->
-      </b-navbar-nav>
-    </b-collapse>
-  </b-navbar>
-</div>
-<select v-model="itemsPerPage" @change="selectItemsPerPage">
-  <option disabled value="">Items Per Page</option>
-  <option v-bind:value="5">5</option>
-  <option v-bind:value="25">25</option>
-  <option v-bind:value="50">50</option>
-</select>
-<select v-model="SortOrder" @change="sortBy">
-  <option disabled value="">Sort Items</option>
-  <option v-bind:value="1">Name Ascending</option>
-  <option v-bind:value="2">Name Descending</option>
-  <option v-bind:value="3">Popularity Ascending</option>
-  <option v-bind:value="4">Popularity Descending</option>
-</select>
+          </b-navbar-nav>
+        </b-collapse>
+      </b-navbar>
+    </div>
+    <div class="options-container-container">
+      <div class="options-container">
+        <p class="options-title">Items Per Page:</p>
+        <select v-model="itemsPerPage" @change="selectItemsPerPage">
+          <option disabled value="">Items Per Page</option>
+          <option :value="5">5</option>
+          <option :value="25">25</option>
+          <option :value="50">50</option>
+        </select>
+      </div>
+      <div class="options-container">
+        <p class="options-title">Sort By:</p>
+        <select v-model="SortOrder" @change="sortBy">
+          <option disabled selected value="Sort By">Sort Items</option>
+          <option :value="1">Name Ascending</option>
+          <option :value="2">Name Descending</option>
+          <option :value="3">Popularity Ascending</option>
+          <option :value="4">Popularity Descending</option>
+        </select>
+      </div>
+    </div>
     <div v-if="products">
       <div class="products-container">
         <div
@@ -45,29 +60,29 @@
           class="products-item"
         >
           <router-link :to="{ name: 'Product', params: { id: product.id } }">
-            <img  class="product-img" :src="product.images[0].urls.sm" />
+            <img class="product-img" :src="product.images[0].urls.sm" />
             <h3 class="padding-side-class products-title">
               {{ product.name }}
             </h3>
           </router-link>
-            <p class="padding-class products-p">
-              {{ product.description.substr(0, 100) }}...
-            </p>
+          <p class="padding-class products-p">
+            {{ product.description.substr(0, 100) }}...
+          </p>
         </div>
       </div>
       <div v-if="infiniteScroll">
         <b-spinner v-if="loadingMoreContent" label="Loading..."></b-spinner>
-        <button @click="loadMore" v-else> Load More</button>
+        <button v-else @click="loadMore">Load More</button>
       </div>
       <div v-else>
         <b-spinner v-if="loadingMoreContent" label="Loading..."></b-spinner>
         <div v-else>
-          <button id="prev" @click="changePage"> Prev Page</button>
-          <button id="next" @click="changePage"> Next Page</button>
+          <button id="prev" @click="changePage">Prev Page</button>
+          <button id="next" @click="changePage">Next Page</button>
         </div>
       </div>
     </div>
-    <div class="full-page-spinner" v-else>
+    <div v-else class="full-page-spinner">
       <b-spinner label="Loading..."></b-spinner>
     </div>
   </div>
@@ -83,137 +98,152 @@ export default {
       page: 1,
       itemsPerPage: 25,
       loadingMoreContent: false,
-      filterString: '',
+      filterString: "",
       SortOrder: null,
-      searchString: '',
-      infiniteScroll: true
+      searchString: "",
+      infiniteScroll: true,
     };
   },
+  mounted() {
+    this.fetchProducts("mounted");
+  },
   methods: {
-    checkForEmptyReturnObj() { //when getting products where page = page+1, ensure the array isn't empty because we've surpassed the number of pages in db
-      if(this.products.length === 0) {
-        this.products = this.productsBackup
-      }
-      else {
-        this.productsBackup = this.products
+    checkForEmptyReturnObj() {
+      //when getting products where page = page+1, ensure the array isn't empty because we've surpassed the number of pages in db
+      if (this.products.length === 0) {
+        this.products = this.productsBackup;
+      } else {
+        this.productsBackup = this.products;
       }
     },
-    fetchProducts(origin) { //all requests are minute variations on same request, so I've bundled them here
-      if(origin === 'changePage') { // click next/prev page
+    fetchProducts(origin) {
+      //all requests are minute variations on same request, so I've bundled them here
+      if (origin === "changePage") {
+        // click next/prev page
         fetch(
-        "https://api.stifirestop.com/products?page=" +
-        this.page +
-        "&limit=" +
-        this.itemsPerPage +
-        "&load%5b%5d=images"
-      )
-      .then((res) => res.json())
-      .then((data) => (
-        this.products = data.data,
-        this.loadingMoreContent = false,
-        this.checkForEmptyReturnObj(),
-        this.sortBy()
-        ))
-      .catch((err) => alert(err.message));
+          "https://api.stifirestop.com/products?page=" +
+            this.page +
+            "&limit=" +
+            this.itemsPerPage +
+            "&load%5b%5d=images"
+        )
+          .then((res) => res.json())
+          .then(
+            (data) => (
+              (this.products = data.data),
+              (this.loadingMoreContent = false),
+              this.checkForEmptyReturnObj(),
+              this.sortBy()
+            )
+          )
+          .catch((err) => alert(err.message));
       }
 
-      if(origin === 'itemsPerPage' || origin === 'mounted') { //change items per page || onMount
-                fetch(
-        "https://api.stifirestop.com/products?page=" +
-        this.page +
-        "&limit=" +
-        this.itemsPerPage +
-        "&load%5b%5d=images"
-      )
-      .then((res) => res.json())
-      .then((data) => (
-        this.products = data.data,
-        this.loadingMoreContent = false,
-        this.productsBackup = this.product,
-        this.sortBy()
-        ))
-      .catch((err) => alert(err.message));
+      if (origin === "itemsPerPage" || origin === "mounted") {
+        //change items per page || onMount
+        fetch(
+          "https://api.stifirestop.com/products?page=" +
+            this.page +
+            "&limit=" +
+            this.itemsPerPage +
+            "&load%5b%5d=images"
+        )
+          .then((res) => res.json())
+          .then(
+            (data) => (
+              (this.products = data.data),
+              (this.loadingMoreContent = false),
+              (this.productsBackup = this.product),
+              this.sortBy()
+            )
+          )
+          .catch((err) => alert(err.message));
       }
 
-      if(origin === 'loadMore') { // infinite scroll
-            fetch(
-      "https://api.stifirestop.com/products?page=" +
-        this.page +
-        "&limit=" +
-        this.itemsPerPage +
-        "&load%5b%5d=images"
-    )
-      .then((res) => res.json())
-      .then((data) => (
-        this.products = this.products.concat(data.data),
-        this.productsBackup = this.products,
-        this.loadingMoreContent = false,
-        this.sortBy()
-        ))
-      .catch((err) => alert(err.message));
+      if (origin === "loadMore") {
+        // infinite scroll
+        fetch(
+          "https://api.stifirestop.com/products?page=" +
+            this.page +
+            "&limit=" +
+            this.itemsPerPage +
+            "&load%5b%5d=images"
+        )
+          .then((res) => res.json())
+          .then(
+            (data) => (
+              (this.products = this.products.concat(data.data)),
+              (this.productsBackup = this.products),
+              (this.loadingMoreContent = false),
+              this.sortBy()
+            )
+          )
+          .catch((err) => alert(err.message));
       }
-
     },
     changePage(e) {
-      if(e.target.id === 'next') {
-        this.page = this.page + 1
-        this.products = null
-        this.fetchProducts('changePage')
-      }
-      else if(e.target.id === 'prev'){
-        if(this.page === 1) {
-          return
+      if (e.target.id === "next") {
+        this.page = this.page + 1;
+        this.products = null;
+        this.fetchProducts("changePage");
+      } else if (e.target.id === "prev") {
+        if (this.page === 1) {
+          return;
         }
-        this.page = this.page -1
-        this.products = null
-        this.fetchProducts('changePage')
-        this.productsBackup = this.products
+        this.page = this.page - 1;
+        this.products = null;
+        this.fetchProducts("changePage");
+        this.productsBackup = this.products;
       }
     },
     //since the API is giving me trouble, I'm doing some javascript filtering
-    filterByName(e) { 
-      if(e.data === null) { //when user deletes character in fiter string, restore array to backup and filter again
-        this.products = this.productsBackup
+    filterByName(e) {
+      if (e.data === null) {
+        //when user deletes character in fiter string, restore array to backup and filter again
+        this.products = this.productsBackup;
       }
-      this.products = this.products.filter(product =>
-        product.name.toLowerCase().indexOf(this.filterString.toLowerCase()) >= 0);
+      this.products = this.products.filter(
+        (product) =>
+          product.name.toLowerCase().indexOf(this.filterString.toLowerCase()) >=
+          0
+      );
     },
 
     loadMore() {
-      this.page = this.page + 1
-      this.loadingMoreContent = true
-      this.fetchProducts('loadMore')
+      this.page = this.page + 1;
+      this.loadingMoreContent = true;
+      this.fetchProducts("loadMore");
     },
 
     selectItemsPerPage() {
-      this.products = null
-      this.page = 1
-      this.fetchProducts('itemsPerPage')
+      this.products = null;
+      this.page = 1;
+      this.fetchProducts("itemsPerPage");
     },
 
     // API is giving me issues, sorting on the client side for funsies
-    sortBy() { 
-      if(this.SortOrder === null) {
-        return
-      }
-      else if(this.SortOrder === 1) { //name ascending
-        this.products.sort((a,b)=> (a.name > b.name ? 1 : -1))
-      }
-      else if(this.SortOrder === 2) { // name descending
-        this.products.sort((a,b)=> (b.name > a.name ? 1 : -1))
-      }
-      else if(this.SortOrder === 3) { // popularity ascending
-        this.products.sort((a, b) => a.popularity - b.popularity)
-      }
-      else if(this.SortOrder === 4) { //popularity descending
-        this.products.sort((a, b) => b.popularity - a.popularity)
+    sortBy() {
+      if (this.SortOrder === null) {
+        return;
+      } else if (this.SortOrder === 1) {
+        //name ascending
+        this.products.sort((a, b) => (a.name > b.name ? 1 : -1));
+      } else if (this.SortOrder === 2) {
+        // name descending
+        this.products.sort((a, b) => (b.name > a.name ? 1 : -1));
+      } else if (this.SortOrder === 3) {
+        // popularity ascending
+        this.products.sort((a, b) => a.popularity - b.popularity);
+      } else if (this.SortOrder === 4) {
+        //popularity descending
+        this.products.sort((a, b) => b.popularity - a.popularity);
       }
     },
     toggleInfiniteScroll() {
-      this.infiniteScroll = !this.infiniteScroll
-    }
+      this.infiniteScroll = !this.infiniteScroll;
+    },
 
-/*  API is giving me issues, may or may not get back to this one 
+    /*  API is giving me issues, may or may not get back to this one 
    searchByName() {
       this.products = null
       this.page = 1
@@ -228,10 +258,6 @@ export default {
         ))
       .catch((err) => alert(err.message));
     },*/
-
-  },
-  mounted() {
-    this.fetchProducts('mounted')
   },
 };
 </script>
@@ -255,7 +281,6 @@ export default {
   font-size: 18px;
   text-align: center;
   width: 100%;
-
 }
 
 .products-p {
@@ -289,5 +314,32 @@ export default {
   display: flex;
   justify-content: center;
   margin: 25%;
+}
+
+.options-container {
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+  justify-content: center;
+  margin-top: 10px;
+}
+.options-container-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+}
+
+.options-title {
+  margin: 10px;
+}
+
+@media only screen and (max-width: 714px) {
+  .options-container {
+    width: 100%;
+  }
+  .options-container-container {
+    flex-direction: column;
+  }
 }
 </style>

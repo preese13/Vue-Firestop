@@ -1,11 +1,10 @@
 <template>
   <div class="product">
-      <b-navbar fixed="top" toggleable="lg" type="dark" variant="info">
-    <b-navbar-brand ><router-link to="/">Home</router-link></b-navbar-brand>
-    <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-    <b-collapse id="nav-collapse" is-nav>
-    </b-collapse>
-  </b-navbar>
+    <b-navbar fixed="top" toggleable="lg" type="dark" variant="info">
+      <b-navbar-brand><router-link to="/">Home</router-link></b-navbar-brand>
+      <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+      <b-collapse id="nav-collapse" is-nav> </b-collapse>
+    </b-navbar>
     <div v-if="product" class="product-page-container">
       <div class="carousel-container">
         <h1 class="padding-class carousel-header">
@@ -28,9 +27,7 @@
             :img-src="image.url"
           ></b-carousel-slide>
         </b-carousel>
-        <div class="order-info-container">
-          test
-        </div>
+        <div class="order-info-container">test</div>
       </div>
       <div class="info-container">
         <h3 class="padding-class info-header">
@@ -60,7 +57,7 @@
 
 <script>
 export default {
-  props: ["id"],
+  props: { id: String },
   data() {
     return {
       product: null,
@@ -108,9 +105,9 @@ export default {
     },
     redirect() {
       this.$router.push({
-        name: 'NotFound'
-      })
-    }
+        name: "NotFound",
+      });
+    },
   },
 };
 </script>
@@ -158,7 +155,7 @@ export default {
 }
 
 .info-header {
-    text-align: center;
+  text-align: center;
   font-size: 20px;
   border-bottom: 1px solid #eee;
 }
@@ -179,7 +176,6 @@ export default {
 }
 
 @media only screen and (max-width: 750px) {
-
   .carousel-header {
     display: block;
   }
