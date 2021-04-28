@@ -1,13 +1,9 @@
 <template>
   <div class="product">
       <b-navbar fixed="top" toggleable="lg" type="dark" variant="info">
-    <b-navbar-brand ><router-link to="/">Products</router-link></b-navbar-brand>
+    <b-navbar-brand ><router-link to="/">Home</router-link></b-navbar-brand>
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     <b-collapse id="nav-collapse" is-nav>
-      <b-navbar-nav>
-        <b-nav-item href="#">Link</b-nav-item>
-        <b-nav-item href="#" disabled>Disabled</b-nav-item>
-      </b-navbar-nav>
     </b-collapse>
   </b-navbar>
     <div v-if="product" class="product-page-container">
@@ -101,7 +97,7 @@ export default {
     )
       .then((res) => res.json())
       .then((data) => (this.product = data.data))
-      .catch((err) => console.log(err.message));
+      .catch(() => this.redirect());
   },
   methods: {
     onSlideStart() {
@@ -110,6 +106,11 @@ export default {
     onSlideEnd() {
       this.sliding = false;
     },
+    redirect() {
+      this.$router.push({
+        name: 'NotFound'
+      })
+    }
   },
 };
 </script>

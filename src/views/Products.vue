@@ -2,12 +2,11 @@
   <div class="products">
     <div>
   <b-navbar fixed="top" toggleable="lg" type="dark" variant="info">
-    <b-navbar-brand ><router-link to="/">Products</router-link></b-navbar-brand>
+    <b-navbar-brand ><router-link to="/">Home</router-link></b-navbar-brand>
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
         <b-nav-item @click="toggleInfiniteScroll">Infinite Scroll</b-nav-item>
-        <b-nav-item href="#" disabled>Disabled</b-nav-item>
       </b-navbar-nav>
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
@@ -91,108 +90,53 @@ export default {
     };
   },
   methods: {
-
-    changePage(e) {
-      if(e.target.id === 'next') {
-        this.page = this.page + 1
-        this.products = null
-
-        fetch(
-      "https://api.stifirestop.com/products?page=" +
-        this.page +
-        "&limit=" +
-        this.itemsPerPage +
-        "&load%5b%5d=images"
-    )
-      .then((res) => res.json())
-      .then((data) => (
-        this.products = data.data,
-        this.loadingMoreContent = false,
-        this.sortBy()
-        ))
-      .catch((err) => console.log(err.message));
-
-        if(this.products.length === 0) {
-          this.products = this.productsBackup
-        }
-        else {
-          this.productsBackup = this.products
-        }
-      }
-      else if(e.target.id === 'prev'){
-        if(this.page === 1) {
-          return
-        }
-        this.page = this.page -1
-        this.products = null
-        fetch(
-      "https://api.stifirestop.com/products?page=" +
-        this.page +
-        "&limit=" +
-        this.itemsPerPage +
-        "&load%5b%5d=images"
-    )
-      .then((res) => res.json())
-      .then((data) => (
-        this.products = data.data,
-        this.loadingMoreContent = false,
-        this.productsBackup = this.products,
-        this.sortBy()
-        ))
-      .catch((err) => console.log(err.message));
-
-      }
-    },
-    //since the API is giving me trouble, I'm doing some javascript filtering
-    filterByName(e) { 
-      if(e.data === null) { //when user deletes character in fiter string, restore array to backup and filter again
+    checkForEmptyReturnObj() { //when getting products where page = page+1, ensure the array isn't empty because we've surpassed the number of pages in db
+      if(this.products.length === 0) {
         this.products = this.productsBackup
       }
-      this.products = this.products.filter(product =>
-        product.name.toLowerCase().indexOf(this.filterString.toLowerCase()) >= 0);
+      else {
+        this.productsBackup = this.products
+      }
     },
-
-    toggleInfiniteScroll() {
-      this.infiniteScroll = !this.infiniteScroll
-    },
-
-   /*  API is giving me issues, may or may not get back to this one 
-   searchByName() {
-      this.products = null
-      this.page = 1
-      fetch(
-      "https://api.stifirestop.com/products?search=" + this.searchByName + "&load%5b%5d=images"
-    )
+    fetchProducts(origin) { //all requests are minute variations on same request, so I've bundled them here
+      if(origin === 'changePage') { // click next/prev page
+        fetch(
+        "https://api.stifirestop.com/products?page=" +
+        this.page +
+        "&limit=" +
+        this.itemsPerPage +
+        "&load%5b%5d=images"
+      )
       .then((res) => res.json())
       .then((data) => (
         this.products = data.data,
-        this.productsBackup = this.products,
+        this.loadingMoreContent = false,
+        this.checkForEmptyReturnObj(),
         this.sortBy()
         ))
-      .catch((err) => console.log(err.message));
-    },*/
+      .catch((err) => alert(err.message));
+      }
 
-    // API is giving me issues, sorting on the client side for funsies
-    sortBy() { 
-      if(this.SortOrder === 1) { //name ascending
-        this.products.sort((a,b)=> (a.name > b.name ? 1 : -1))
+      if(origin === 'itemsPerPage' || origin === 'mounted') { //change items per page || onMount
+                fetch(
+        "https://api.stifirestop.com/products?page=" +
+        this.page +
+        "&limit=" +
+        this.itemsPerPage +
+        "&load%5b%5d=images"
+      )
+      .then((res) => res.json())
+      .then((data) => (
+        this.products = data.data,
+        this.loadingMoreContent = false,
+        this.productsBackup = this.product,
+        this.sortBy()
+        ))
+      .catch((err) => alert(err.message));
       }
-      else if(this.SortOrder === 2) { // name descending
-        this.products.sort((a,b)=> (b.name > a.name ? 1 : -1))
-      }
-      else if(this.SortOrder === 3) { // popularity ascending
-        this.products.sort((a, b) => a.popularity - b.popularity)
-      }
-      else if(this.SortOrder === 4) { //popularity descending
-        this.products.sort((a, b) => b.popularity - a.popularity)
-      }
-    },
-    //todo:  check if response data[] is empty and hide the 'loadMore' button once all data is retrieved
-    //todo: make fetch requests dry.  
-    loadMore() {
-      this.page = this.page + 1
-      this.loadingMoreContent = true
-      fetch(
+
+      if(origin === 'loadMore') { // infinite scroll
+            fetch(
       "https://api.stifirestop.com/products?page=" +
         this.page +
         "&limit=" +
@@ -206,41 +150,88 @@ export default {
         this.loadingMoreContent = false,
         this.sortBy()
         ))
-      .catch((err) => console.log(err.message));
+      .catch((err) => alert(err.message));
+      }
+
     },
+    changePage(e) {
+      if(e.target.id === 'next') {
+        this.page = this.page + 1
+        this.products = null
+        this.fetchProducts('changePage')
+      }
+      else if(e.target.id === 'prev'){
+        if(this.page === 1) {
+          return
+        }
+        this.page = this.page -1
+        this.products = null
+        this.fetchProducts('changePage')
+        this.productsBackup = this.products
+      }
+    },
+    //since the API is giving me trouble, I'm doing some javascript filtering
+    filterByName(e) { 
+      if(e.data === null) { //when user deletes character in fiter string, restore array to backup and filter again
+        this.products = this.productsBackup
+      }
+      this.products = this.products.filter(product =>
+        product.name.toLowerCase().indexOf(this.filterString.toLowerCase()) >= 0);
+    },
+
+    loadMore() {
+      this.page = this.page + 1
+      this.loadingMoreContent = true
+      this.fetchProducts('loadMore')
+    },
+
     selectItemsPerPage() {
       this.products = null
       this.page = 1
-          fetch(
-      "https://api.stifirestop.com/products?page=" +
-        this.page +
-        "&limit=" +
-        this.itemsPerPage +
-        "&load%5b%5d=images"
+      this.fetchProducts('itemsPerPage')
+    },
+
+    // API is giving me issues, sorting on the client side for funsies
+    sortBy() { 
+      if(this.SortOrder === null) {
+        return
+      }
+      else if(this.SortOrder === 1) { //name ascending
+        this.products.sort((a,b)=> (a.name > b.name ? 1 : -1))
+      }
+      else if(this.SortOrder === 2) { // name descending
+        this.products.sort((a,b)=> (b.name > a.name ? 1 : -1))
+      }
+      else if(this.SortOrder === 3) { // popularity ascending
+        this.products.sort((a, b) => a.popularity - b.popularity)
+      }
+      else if(this.SortOrder === 4) { //popularity descending
+        this.products.sort((a, b) => b.popularity - a.popularity)
+      }
+    },
+    toggleInfiniteScroll() {
+      this.infiniteScroll = !this.infiniteScroll
+    }
+
+/*  API is giving me issues, may or may not get back to this one 
+   searchByName() {
+      this.products = null
+      this.page = 1
+      fetch(
+      "https://api.stifirestop.com/products?search=" + this.searchByName + "&load%5b%5d=images"
     )
       .then((res) => res.json())
       .then((data) => (
         this.products = data.data,
         this.productsBackup = this.products,
         this.sortBy()
-      ))
-      .catch((err) => console.log(err.message));
-    }
+        ))
+      .catch((err) => alert(err.message));
+    },*/
+
   },
   mounted() {
-    fetch(
-      "https://api.stifirestop.com/products?page=" +
-        "1" +
-        "&limit=" +
-        this.itemsPerPage +
-        "&load%5b%5d=images"
-    )
-      .then((res) => res.json())
-      .then((data) => (
-        this.products = data.data,
-        this.productsBackup = this.products
-        ))
-      .catch((err) => console.log(err.message));
+    this.fetchProducts('mounted')
   },
 };
 </script>
