@@ -6,15 +6,21 @@
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
-        <b-nav-item href="#">Link</b-nav-item>
+        <b-nav-item @click="toggleInfiniteScroll">Infinite Scroll</b-nav-item>
         <b-nav-item href="#" disabled>Disabled</b-nav-item>
       </b-navbar-nav>
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
         <b-nav-form>
-          <input placeholder="Search" type="search" v-model="filterString" @input="filterByName">
-          <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
+          <input placeholder="Filter" type="search" v-model="filterString" @input="filterByName">
         </b-nav-form>
+         <!-- API is givine me issues, might get to this one
+           <b-nav-form  @submit.prevent="searchByName">
+          <input placeholder="Search" type="search" v-model="searchString">
+          <button type="submit">
+            Submit
+          </button>
+        </b-nav-form>-->
       </b-navbar-nav>
     </b-collapse>
   </b-navbar>
@@ -50,8 +56,17 @@
             </p>
         </div>
       </div>
-      <b-spinner v-if="loadingMoreContent" label="Loading..."></b-spinner>
-      <button @click="loadMore" v-else> Load More</button>
+      <div v-if="infiniteScroll">
+        <b-spinner v-if="loadingMoreContent" label="Loading..."></b-spinner>
+        <button @click="loadMore" v-else> Load More</button>
+      </div>
+      <div v-else>
+        <b-spinner v-if="loadingMoreContent" label="Loading..."></b-spinner>
+        <div v-else>
+          <button id="prev" @click="changePage"> Prev Page</button>
+          <button id="next" @click="changePage"> Next Page</button>
+        </div>
+      </div>
     </div>
     <div class="full-page-spinner" v-else>
       <b-spinner label="Loading..."></b-spinner>
@@ -71,23 +86,94 @@ export default {
       loadingMoreContent: false,
       filterString: '',
       SortOrder: null,
+      searchString: '',
+      infiniteScroll: true
     };
   },
   methods: {
 
-    //In a prod env where I have more time I'd filter what is rendered in the dom as opposed
-    //to filtering the array of products itself.  However, time is of the essence and I'd rather 
-    //get this in than skip it.  So I've concocted the 'productsBackup' as a quick way to restore
-    // the products array when a user removes a character from the search string
-    filterByName(e) {
-      console.log(e)
+    changePage(e) {
+      if(e.target.id === 'next') {
+        this.page = this.page + 1
+        this.products = null
+
+        fetch(
+      "https://api.stifirestop.com/products?page=" +
+        this.page +
+        "&limit=" +
+        this.itemsPerPage +
+        "&load%5b%5d=images"
+    )
+      .then((res) => res.json())
+      .then((data) => (
+        this.products = data.data,
+        this.loadingMoreContent = false,
+        this.sortBy()
+        ))
+      .catch((err) => console.log(err.message));
+
+        if(this.products.length === 0) {
+          this.products = this.productsBackup
+        }
+        else {
+          this.productsBackup = this.products
+        }
+      }
+      else if(e.target.id === 'prev'){
+        if(this.page === 1) {
+          return
+        }
+        this.page = this.page -1
+        this.products = null
+        fetch(
+      "https://api.stifirestop.com/products?page=" +
+        this.page +
+        "&limit=" +
+        this.itemsPerPage +
+        "&load%5b%5d=images"
+    )
+      .then((res) => res.json())
+      .then((data) => (
+        this.products = data.data,
+        this.loadingMoreContent = false,
+        this.productsBackup = this.products,
+        this.sortBy()
+        ))
+      .catch((err) => console.log(err.message));
+
+      }
+    },
+    //since the API is giving me trouble, I'm doing some javascript filtering
+    filterByName(e) { 
       if(e.data === null) { //when user deletes character in fiter string, restore array to backup and filter again
         this.products = this.productsBackup
       }
       this.products = this.products.filter(product =>
         product.name.toLowerCase().indexOf(this.filterString.toLowerCase()) >= 0);
     },
-    sortBy() {
+
+    toggleInfiniteScroll() {
+      this.infiniteScroll = !this.infiniteScroll
+    },
+
+   /*  API is giving me issues, may or may not get back to this one 
+   searchByName() {
+      this.products = null
+      this.page = 1
+      fetch(
+      "https://api.stifirestop.com/products?search=" + this.searchByName + "&load%5b%5d=images"
+    )
+      .then((res) => res.json())
+      .then((data) => (
+        this.products = data.data,
+        this.productsBackup = this.products,
+        this.sortBy()
+        ))
+      .catch((err) => console.log(err.message));
+    },*/
+
+    // API is giving me issues, sorting on the client side for funsies
+    sortBy() { 
       if(this.SortOrder === 1) { //name ascending
         this.products.sort((a,b)=> (a.name > b.name ? 1 : -1))
       }
@@ -117,7 +203,8 @@ export default {
       .then((data) => (
         this.products = this.products.concat(data.data),
         this.productsBackup = this.products,
-        this.loadingMoreContent = false
+        this.loadingMoreContent = false,
+        this.sortBy()
         ))
       .catch((err) => console.log(err.message));
     },
@@ -134,7 +221,8 @@ export default {
       .then((res) => res.json())
       .then((data) => (
         this.products = data.data,
-        this.productsBackup = this.products 
+        this.productsBackup = this.products,
+        this.sortBy()
       ))
       .catch((err) => console.log(err.message));
     }
