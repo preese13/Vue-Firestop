@@ -1,0 +1,59 @@
+{
+"data": {
+"id": 1,
+"name": "EZ Path Series 33NEZ Smoke and Acoustical Pathway",
+"short_name": "33NEZ",
+"brand": "EZ Path",
+"slug": "ez-path-series-33nez-smoke-and-acoustical-pathway",
+"short_description": "Designed for easy installation in non-rated floor, ceilings, and walls, EZ Path Series 33NEZ Smoke & Acoustical Pathway provides exceptional cable capacity with tested and approved cable capacities ranging from 0 up to 100% visual fill. A single unit installed in a wall exceeds the cable carrying capacity of a 4\" (102 mm) sleeve utilizing typical putty firestop systems (35% cable loading).",
+"short_description_decoded": "Designed for easy installation in non-rated floor, ceilings, and walls, EZ Path Series 33NEZ Smoke & Acoustical Pathway provides exceptional cable capacity with tested and approved cable capacities ranging from 0 up to 100% visual fill. A single unit installed in a wall exceeds the cable carrying capacity of a 4\" (102 mm) sleeve utilizing typical putty firestop systems (35% cable loading).",
+"description": "Designed for easy installation in non-rated floor, ceilings, and walls, EZ Path Series 33NEZ Smoke & Acoustical Pathway provides exceptional cable capacity with tested and approved cable capacities ranging from 0 up to 100% visual fill. A single unit installed in a wall exceeds the cable carrying capacity of a 4\" (102 mm) sleeve utilizing typical putty firestop systems (35% cable loading).",
+"description_decoded": "Designed for easy installation in non-rated floor, ceilings, and walls, EZ Path Series 33NEZ Smoke & Acoustical Pathway provides exceptional cable capacity with tested and approved cable capacities ranging from 0 up to 100% visual fill. A single unit installed in a wall exceeds the cable carrying capacity of a 4\" (102 mm) sleeve utilizing typical putty firestop systems (35% cable loading).",
+"testing_standards": [
+"ASTM E90-09"
+],
+"third_party_approvals": [],
+"bullet_points": [
+"Self Sealing design providing exceptional STC and L Ratings",
+"Gang Plate and Ceiling Mounted Options",
+"Allows for easy Moves, Adds, and Changes",
+"Professional Fit & Finish",
+"Devices available in Blue and White"
+],
+"bullet_points_decoded": [
+"Self Sealing design providing exceptional STC and L Ratings",
+"Gang Plate and Ceiling Mounted Options",
+"Allows for easy Moves, Adds, and Changes",
+"Professional Fit & Finish",
+"Devices available in Blue and White"
+],
+"regions": [
+"na"
+],
+"popularity": 37,
+"additional_data": {
+"estimators": [
+{
+"name": "EZ Path NEZ Estimator",
+"router_path": "resources-nez-estimator",
+"url": "https://www.stifirestop.com/resources/nez-estimator"
+}
+]
+}
+},
+"meta": {
+"sortable_fields": [
+"name",
+"popularity",
+"created_at",
+"updated_at"
+],
+"searchable_fields": [
+"name",
+"description",
+"testing_standards",
+"third_party_approvals",
+"bullet_points"
+]
+}
+}
